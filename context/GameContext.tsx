@@ -11,6 +11,7 @@ type ObjectToFind = {
 
 type GameContextType = {
   score: number
+  totalScore: number
   objectsToFind: ObjectToFind[]
   resetGame: () => void
   markObjectAsFound: (objectId: string) => void
@@ -19,11 +20,9 @@ type GameContextType = {
 }
 
 const defaultObjects: ObjectToFind[] = [
-  { id: "1", name: "Libro", found: false },
+  { id: "1", name: "Teclado", found: false },
   { id: "2", name: "Taza", found: false },
-  { id: "3", name: "Teléfono", found: false },
-  { id: "4", name: "Lápiz", found: false },
-  { id: "5", name: "Reloj", found: false },
+  { id: "3", name: "Lápiz", found: false },
 ]
 
 const GameContext = createContext<GameContextType | undefined>(undefined)
@@ -38,6 +37,7 @@ export const useGame = () => {
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [score, setScore] = useState(0)
+  const [totalScore, setTotalScore] = useState(0) // nuevo acumulador
   const [objectsToFind, setObjectsToFind] = useState<ObjectToFind[]>(defaultObjects)
 
   const resetGame = () => {
@@ -46,9 +46,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const markObjectAsFound = (objectId: string) => {
-    setObjectsToFind((prevObjects) => prevObjects.map((obj) => (obj.id === objectId ? { ...obj, found: true } : obj)))
-    setScore((prevScore) => prevScore + 100)
-  }
+  setObjectsToFind((prevObjects) =>
+    prevObjects.map((obj) =>
+      obj.id === objectId ? { ...obj, found: true } : obj
+    )
+  )
+  setScore((prevScore) => prevScore + 100)
+  setTotalScore((prevTotal) => prevTotal + 100)
+}
+
 
   const calculateScore = () => {
     return score
@@ -62,6 +68,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <GameContext.Provider
       value={{
         score,
+        totalScore,
         objectsToFind,
         resetGame,
         markObjectAsFound,

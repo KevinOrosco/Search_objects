@@ -1,43 +1,57 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, FlatList, Image } from "react-native"
+import { StyleSheet, View, Text, TouchableOpacity, FlatList, Image } from "react-native"
 import { StatusBar } from "expo-status-bar"
+import { useGame } from "../context/GameContext"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 type RankingItem = {
   id: string
   username: string
   score: number
-  rank: number
+  rank?: number
 }
 
 export default function RankingScreen({ navigation }: any) {
   const [rankings, setRankings] = useState<RankingItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { totalScore } = useGame()
 
   useEffect(() => {
-    // In a real app, you would connect to a WebSocket here
-    // This is a mock implementation
     const fetchRankings = async () => {
       try {
-        // Simulate API delay
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        // Mock data
-        const mockRankings: RankingItem[] = [
-          { id: "1", username: "SuperBuscador", score: 1250, rank: 1 },
-          { id: "2", username: "Aventurera99", score: 980, rank: 2 },
-          { id: "3", username: "ElDetective", score: 875, rank: 3 },
-          { id: "4", username: "Explorador", score: 720, rank: 4 },
-          { id: "5", username: "CazaObjetos", score: 650, rank: 5 },
-          { id: "6", username: "LupaMaestra", score: 590, rank: 6 },
-          { id: "7", username: "BuscadorPro", score: 540, rank: 7 },
-          { id: "8", username: "ObjetivoClaro", score: 480, rank: 8 },
-          { id: "9", username: "MisionCumplida", score: 420, rank: 9 },
-          { id: "10", username: "CampeónBúsqueda", score: 380, rank: 10 },
+        // Datos mock de otros jugadores
+        const mockOthers: RankingItem[] = [
+          { id: "1", username: "SuperBuscador", score: 1250 },
+          { id: "2", username: "Aventurera99", score: 980 },
+          { id: "3", username: "ElDetective", score: 875 },
+          { id: "4", username: "Explorador", score: 720 },
+          { id: "5", username: "CazaObjetos", score: 650 },
+          { id: "6", username: "LupaMaestra", score: 590 },
+          { id: "7", username: "BuscadorPro", score: 540 },
+          { id: "8", username: "ObjetivoClaro", score: 480 },
+          { id: "9", username: "MisionCumplida", score: 420 },
+          { id: "10", username: "CampeónBúsqueda", score: 380 },
         ]
 
-        setRankings(mockRankings)
+        const currentPlayer: RankingItem = {
+          id: "0",
+          username: "Tú",
+          score: totalScore,
+        }
+
+        // Combinar, ordenar y asignar rank dinámico
+        const allPlayers = [currentPlayer, ...mockOthers]
+          .sort((a, b) => b.score - a.score)
+          .map((item, index) => ({
+            ...item,
+            rank: index + 1,
+          }))
+
+        setRankings(allPlayers)
       } catch (error) {
         console.error("Error fetching rankings:", error)
       } finally {
@@ -46,12 +60,7 @@ export default function RankingScreen({ navigation }: any) {
     }
 
     fetchRankings()
-
-    // Cleanup function for WebSocket in a real app
-    return () => {
-      // Close WebSocket connection
-    }
-  }, [])
+  }, [totalScore])
 
   const handleGoBack = () => {
     navigation.goBack()
@@ -64,6 +73,7 @@ export default function RankingScreen({ navigation }: any) {
         item.rank === 1 ? styles.firstPlace : null,
         item.rank === 2 ? styles.secondPlace : null,
         item.rank === 3 ? styles.thirdPlace : null,
+        item.username === "Tú" ? { borderWidth: 2, borderColor: "#3498db" } : null,
       ]}
     >
       <View style={styles.rankContainer}>
@@ -116,10 +126,8 @@ export default function RankingScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F7FA",
-  },
+  // (los mismos estilos que ya tenías)
+  container: { flex: 1, backgroundColor: "#F5F7FA" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -135,9 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#2c3e50",
   },
-  backButton: {
-    padding: 4,
-  },
+  backButton: { padding: 4 },
   backButtonText: {
     color: "#3498db",
     fontSize: 16,
@@ -214,9 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  userInfo: {
-    flex: 1,
-  },
+  userInfo: { flex: 1 },
   username: {
     fontSize: 16,
     fontWeight: "bold",

@@ -1,26 +1,11 @@
 "use client"
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Alert } from "react-native"
-import { useAuth } from "../context/AuthContext"
+import { StyleSheet, View, Text, TouchableOpacity, Alert } from "react-native"
+import { useUser } from "../context/UserContext"
 import { StatusBar } from "expo-status-bar"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function ProfileScreen({ navigation }: any) {
-  const { user, logout } = useAuth()
-
-  const handleLogout = () => {
-    Alert.alert("Cerrar Sesión", "¿Estás seguro que deseas cerrar sesión?", [
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
-      {
-        text: "Sí, cerrar sesión",
-        onPress: () => {
-          logout()
-          navigation.replace("Login")
-        },
-      },
-    ])
-  }
+  const { username } = useUser()
 
   const handleGoBack = () => {
     navigation.goBack()
@@ -41,10 +26,10 @@ export default function ProfileScreen({ navigation }: any) {
       <View style={styles.content}>
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{user?.username.charAt(0) || "U"}</Text>
+            <Text style={styles.avatarText}>{username.charAt(0) || "U"}</Text>
           </View>
-          <Text style={styles.username}>{user?.username || "Usuario"}</Text>
-          <Text style={styles.email}>{user?.email || "email@ejemplo.com"}</Text>
+          <Text style={styles.username}>{username || "Usuario"}</Text>
+          <Text style={styles.email}>{"Usuario@ejemplo.com"}</Text>
         </View>
 
         <View style={styles.statsContainer}>
@@ -85,10 +70,6 @@ export default function ProfileScreen({ navigation }: any) {
             </View>
           </View>
         </View>
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   )

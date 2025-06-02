@@ -1,9 +1,10 @@
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, SafeAreaView, Image } from "react-native"
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Image } from "react-native"
 import { StatusBar } from "expo-status-bar"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function RulesScreen({ navigation }: any) {
   const handleStartGame = () => {
-    navigation.navigate("Game")
+    navigation.navigate("Juego")
   }
 
   return (

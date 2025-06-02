@@ -1,12 +1,22 @@
 "use client"
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Image } from "react-native"
+import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native"
 import { useGame } from "../context/GameContext"
 import { StatusBar } from "expo-status-bar"
-import { useAuth } from "../context/AuthContext"
+import { useUser } from "../context/UserContext"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function SummaryScreen({ navigation }: any) {
-  const { score, resetGame } = useGame()
-  const { user } = useAuth()
+  const { score, resetGame, objectsToFind } = useGame()
+  const { username } = useUser()
+
+  const foundCount = objectsToFind.filter((obj) => obj.found).length
+  const precisión = foundCount * 33 
+  const Getrango = () => {
+    if (precisión === 99) return 'A+'
+    if (precisión === 66) return 'B'
+    return 'C'
+  }
+  const rango = Getrango()
 
   const handlePlayAgain = () => {
     resetGame()
@@ -30,20 +40,20 @@ export default function SummaryScreen({ navigation }: any) {
         <View style={styles.scoreContainer}>
           <Text style={styles.scoreLabel}>Puntuación</Text>
           <Text style={styles.scoreValue}>{score}</Text>
-          <Text style={styles.playerName}>{user?.username || "Aventurero"}</Text>
+          <Text style={styles.playerName}>{ username || "Aventurero"}</Text>
         </View>
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>5</Text>
+            <Text style={styles.statValue}>{foundCount}</Text>
             <Text style={styles.statLabel}>Objetos</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>100%</Text>
+            <Text style={styles.statValue}>{precisión + 1}%</Text>
             <Text style={styles.statLabel}>Precisión</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>A+</Text>
+            <Text style={styles.statValue}>{rango}</Text>
             <Text style={styles.statLabel}>Rango</Text>
           </View>
         </View>

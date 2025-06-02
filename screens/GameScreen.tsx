@@ -7,28 +7,28 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   ActivityIndicator,
   Alert,
 } from "react-native"
-import { Camera } from "expo-camera"
+import { CameraView, useCameraPermissions } from "expo-camera"
 import * as FileSystem from "expo-file-system"
 import { useGame } from "../context/GameContext"
 import { StatusBar } from "expo-status-bar"
+import { detectObjects } from "../utils/huggingface"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function GameScreen({ navigation }: any) {
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
-  const [type, setType] = useState(Camera.Constants.Type.back)
+  const [permission, requestPermission] = useCameraPermissions()
   const [isCapturing, setIsCapturing] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const cameraRef = useRef<Camera | null>(null)
+  const [type] = useState<"back" | "front">("back")
+  const cameraRef = useRef<CameraView | null>(null)
   const { objectsToFind, markObjectAsFound, allObjectsFound } = useGame()
 
   useEffect(() => {
-    ;(async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync()
-      setHasPermission(status === "granted")
-    })()
+    if (!permission?.granted) {
+      requestPermission()
+    }
   }, [])
 
   const takePicture = async () => {
@@ -47,49 +47,38 @@ export default function GameScreen({ navigation }: any) {
   }
 
   const processImage = async (uri: string) => {
-    setIsProcessing(true)
-    try {
-      // Convert image to base64
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      })
+  setIsProcessing(true)
+  try {
+    const base64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    })
+    
+    const detectedLabels = await detectObjects(base64)
 
-      // In a real app, you would send this to Hugging Face API
-      // This is a mock implementation that simulates object detection
-      await simulateObjectDetection(base64)
-
-      // Check if all objects are found
-      if (allObjectsFound()) {
-        navigation.replace("Summary")
+    // Marcar los objetos detectados
+    detectedLabels.forEach((label: string) => {
+      const matched = objectsToFind.find(
+        (obj) => obj.name.toLowerCase() === label.toLowerCase() && !obj.found
+      )
+      if (matched) {
+        markObjectAsFound(matched.id)
       }
-    } catch (error) {
-      console.error("Error processing image:", error)
-      Alert.alert("Error", "No se pudo procesar la imagen. Inténtalo de nuevo.")
-    } finally {
-      setIsProcessing(false)
+      navigation.navigate("Juego")
+    })
+
+    if (allObjectsFound()) {
+      navigation.replace("Summary")
     }
+  } catch (error) {
+    console.error("Error processing image:", error)
+    Alert.alert("Error", "No se pudo procesar la imagen. Inténtalo de nuevo.")
+  } finally {
+    setIsProcessing(false)
   }
+}
 
-  // Mock function to simulate object detection
-  const simulateObjectDetection = async (base64: string) => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    // Randomly mark 1-2 objects as found
-    const notFoundObjects = objectsToFind.filter((obj) => !obj.found)
-    if (notFoundObjects.length > 0) {
-      const randomIndex = Math.floor(Math.random() * notFoundObjects.length)
-      markObjectAsFound(notFoundObjects[randomIndex].id)
-
-      // Sometimes mark a second object
-      if (notFoundObjects.length > 1 && Math.random() > 0.5) {
-        const secondIndex = (randomIndex + 1) % notFoundObjects.length
-        markObjectAsFound(notFoundObjects[secondIndex].id)
-      }
-    }
-  }
-
-  if (hasPermission === null) {
+  if (!permission) {
     return (
       <View style={styles.centeredContainer}>
         <Text>Solicitando permiso de cámara...</Text>
@@ -97,7 +86,7 @@ export default function GameScreen({ navigation }: any) {
     )
   }
 
-  if (hasPermission === false) {
+  if (!permission.granted) {
     return (
       <View style={styles.centeredContainer}>
         <Text>No hay acceso a la cámara</Text>
@@ -110,41 +99,46 @@ export default function GameScreen({ navigation }: any) {
       <StatusBar style="light" />
 
       <View style={styles.cameraContainer}>
-        <Camera ref={cameraRef} style={styles.camera} type={type} ratio="16:9">
-          <View style={styles.overlay}>
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}>Busca los objetos</Text>
-            </View>
+  <CameraView
+    ref={cameraRef}
+    style={StyleSheet.absoluteFill}
+    facing={type}
+  />
 
-            <View style={styles.objectListContainer}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.objectList}>
-                {objectsToFind.map((object) => (
-                  <View key={object.id} style={styles.objectItem}>
-                    <Text style={[styles.objectName, object.found && styles.objectFound]}>{object.name}</Text>
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
+  <View style={styles.overlay}>
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>Busca los objetos</Text>
+    </View>
 
-            <View style={styles.captureContainer}>
-              {isProcessing ? (
-                <View style={styles.processingContainer}>
-                  <ActivityIndicator size="large" color="#FFFFFF" />
-                  <Text style={styles.processingText}>Analizando imagen...</Text>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
-                  onPress={takePicture}
-                  disabled={isCapturing}
-                >
-                  <View style={styles.captureButtonInner} />
-                </TouchableOpacity>
-              )}
-            </View>
+    <View style={styles.objectListContainer}>
+      <ScrollView>
+        {objectsToFind.map((object) => (
+          <View key={object.id} style={styles.objectItem}>
+            <Text style={[styles.objectName, object.found && styles.objectFound]}>{object.name}</Text>
           </View>
-        </Camera>
+        ))}
+      </ScrollView>
+    </View>
+
+      <View style={styles.captureContainer}>
+        {isProcessing ? (
+          <View style={styles.processingContainer}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={styles.processingText}>Analizando imagen...</Text>
+          </View>
+          ) : (
+          <TouchableOpacity
+            style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
+            onPress={takePicture}
+            disabled={isCapturing}
+          >
+          <View style={styles.captureButtonInner} />
+          </TouchableOpacity>
+          )}
+          </View>
+        </View>
       </View>
+
     </SafeAreaView>
   )
 }
@@ -160,16 +154,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cameraContainer: {
-    flex: 1,
-  },
-  camera: {
-    flex: 1,
-  },
+  flex: 1,
+  position: "relative", // necesario para superponer
+},
   overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "space-between",
-  },
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: "rgba(0,0,0,0.3)",
+  justifyContent: "space-between",
+},
   header: {
     padding: 20,
     alignItems: "center",
@@ -183,27 +175,43 @@ const styles = StyleSheet.create({
     textShadowRadius: 10,
   },
   objectListContainer: {
-    padding: 10,
-  },
-  objectList: {
-    maxHeight: 50,
-  },
+  position: "absolute",
+  top: 60,
+  left: 10,
+  backgroundColor: "rgba(255, 248, 220, 0.8)", // color tipo pergamino transparente
+  borderRadius: 12,
+  paddingHorizontal: 10,
+  paddingVertical: 10,
+  maxHeight: 300,
+  width: 150,
+  borderWidth: 1,
+  borderColor: "#c2a76d",
+},
   objectItem: {
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginHorizontal: 5,
+    backgroundColor: "#f5e9c7", // un color pergamino
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginVertical: 8,
     justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3, // para Android
+    borderWidth: 1,
+    borderColor: "#c2a76d", // borde tipo cuero o mapa viejo
   },
   objectName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#2c3e50",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#5d3c14", // marrón oscuro tipo tinta
+    fontFamily: "serif", // opcional si querés un estilo manuscrito clásico
   },
   objectFound: {
     textDecorationLine: "line-through",
-    color: "#7f8c8d",
+    color: "#a5a5a5",
   },
   captureContainer: {
     alignItems: "center",

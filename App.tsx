@@ -1,35 +1,49 @@
 import { NavigationContainer } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
-import { AuthProvider } from "./context/AuthContext"
+
+import { UserProvider } from "./context/UserContext"
 import { GameProvider } from "./context/GameContext"
-import LoginScreen from "./screens/LoginScreen"
-import RegisterScreen from "./screens/RegisterScreen"
+import { SafeAreaProvider } from "react-native-safe-area-context"
+
+import GameScreen from "./screens/GameScreen"
+import JuegoScreen from "./screens/JuegoScreen"
 import HomeScreen from "./screens/HomeScreen"
 import RulesScreen from "./screens/RulesScreen"
-import GameScreen from "./screens/GameScreen"
 import SummaryScreen from "./screens/SummaryScreen"
 import ProfileScreen from "./screens/ProfileScreen"
 import RankingScreen from "./screens/RankingScreen"
 
-const Stack = createNativeStackNavigator()
+type RootStackParamList = { 
+  Game: undefined
+  Home: undefined
+  Rules: undefined
+  Juego: undefined
+  Camera: undefined
+  Summary: undefined
+  Profile: undefined
+  Ranking: undefined
+}
+
+const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export default function App() {
   return (
-    <AuthProvider>
+    <SafeAreaProvider>
+    <UserProvider>
       <GameProvider>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Navigator id = {undefined} screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Rules" component={RulesScreen} />
-            <Stack.Screen name="Game" component={GameScreen} />
+            <Stack.Screen name="Juego" component={JuegoScreen} />
+            <Stack.Screen name="Camera" component={GameScreen} />
             <Stack.Screen name="Summary" component={SummaryScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="Ranking" component={RankingScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </GameProvider>
-    </AuthProvider>
+    </UserProvider>
+    </SafeAreaProvider>
   )
 }

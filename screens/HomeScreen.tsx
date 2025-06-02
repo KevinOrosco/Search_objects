@@ -1,11 +1,12 @@
 "use client"
-import { StyleSheet, View, Text, TouchableOpacity, Image, SafeAreaView } from "react-native"
-import { useAuth } from "../context/AuthContext"
+import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native"
+import { useUser } from "../context/UserContext"
 import { useGame } from "../context/GameContext"
 import { StatusBar } from "expo-status-bar"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function HomeScreen({ navigation }: any) {
-  const { user } = useAuth()
+  const { username } = useUser()
   const { resetGame } = useGame()
 
   const handleStartGame = () => {
@@ -29,7 +30,7 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={styles.headerTitle}>Buscador de Objetos</Text>
         <TouchableOpacity onPress={handleViewProfile} style={styles.profileButton}>
           <View style={styles.profileIcon}>
-            <Text style={styles.profileInitial}>{user?.username.charAt(0) || "U"}</Text>
+            <Text style={styles.profileInitial}>{username.charAt(0) || "U"}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -37,7 +38,7 @@ export default function HomeScreen({ navigation }: any) {
       <View style={styles.content}>
         <Image source={{ uri: "https://via.placeholder.com/300" }} style={styles.characterImage} />
 
-        <Text style={styles.welcomeText}>¡Hola, {user?.username || "Aventurero"}!</Text>
+        <Text style={styles.welcomeText}>¡Hola, {username || "Aventurero"}!</Text>
         <Text style={styles.tagline}>¿Listo para una nueva misión de búsqueda?</Text>
 
         <View style={styles.buttonContainer}>
