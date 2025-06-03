@@ -1,15 +1,43 @@
-"use client"
-
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native"
+import { Animated, View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native"
 import { useGame } from "../context/GameContext"
 import { StatusBar } from "expo-status-bar"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useEffect, useRef, useState } from "react"
 
-export default function JuegoScreen({ navigation }: any) {
+export default function JuegoScreen({ navigation, route }: any) {
   const { objectsToFind } = useGame()
 
   const foundCount = objectsToFind.filter((obj) => obj.found).length
   const total = objectsToFind.length
+
+  const [feedback, setFeedback] = useState("")
+  const fadeAnim = useRef(new Animated.Value(0)).current
+
+  
+  const showFeedback = (message: string) => {
+    setFeedback(message);
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }).start();
+      }, 1000);
+    });
+  };
+
+  useEffect(() => {
+    if (route.params?.feedback) {
+      showFeedback(route.params.feedback);
+      navigation.setParams({ feedback: null }); // limpiamos
+    }
+  }, [route.params?.feedback]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -31,18 +59,27 @@ export default function JuegoScreen({ navigation }: any) {
         ))}
       </ScrollView>
 
+      <Animated.View style={[styles.feedbackBox, { opacity: fadeAnim }]}>
+        <Text style={styles.feedbackText}>{feedback}</Text>
+      </Animated.View>
+
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Camera")}>
+        <TouchableOpacity style={styles.button} onPress={() => {
+          navigation.navigate("Camera")
+        }}>
           <Text style={styles.buttonText}>Tomar Foto</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.endButton} onPress={() => navigation.navigate("Summary")}>
+        <TouchableOpacity style={styles.endButton} onPress={() => {
+          navigation.navigate("Summary")
+        }}>
           <Text style={styles.buttonText}>Terminar</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   )
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -76,6 +113,25 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     borderWidth: 1,
     borderColor: "#c2a76d",
+  },
+    feedbackBox: {
+    position: "absolute",
+    bottom: 120,
+    alignSelf: "center",
+    backgroundColor: "#fff8e1",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  feedbackText: {
+    fontSize: 16,
+    color: "#5d3c14",
+    fontWeight: "bold",
   },
   objectName: {
     fontSize: 16,

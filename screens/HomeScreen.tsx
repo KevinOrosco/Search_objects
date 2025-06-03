@@ -1,9 +1,10 @@
 "use client"
-import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native"
+import { StyleSheet, View, Text, TouchableOpacity, ImageBackground } from "react-native"
 import { useUser } from "../context/UserContext"
 import { useGame } from "../context/GameContext"
 import { StatusBar } from "expo-status-bar"
 import { SafeAreaView } from "react-native-safe-area-context"
+
 
 export default function HomeScreen({ navigation }: any) {
   const { username } = useUser()
@@ -34,13 +35,16 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         </TouchableOpacity>
       </View>
-
+      <ImageBackground
+      source={require("../assets/pinguino.png")} // Fondo
+      resizeMode="cover"
+      style={styles.background}
+    >
       <View style={styles.content}>
-        <Image source={{ uri: "https://via.placeholder.com/300" }} style={styles.characterImage} />
 
         <Text style={styles.welcomeText}>¡Hola, {username || "Aventurero"}!</Text>
         <Text style={styles.tagline}>¿Listo para una nueva misión de búsqueda?</Text>
-
+      
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.primaryButton} onPress={handleStartGame}>
             <Text style={styles.primaryButtonText}>Iniciar Búsqueda</Text>
@@ -49,8 +53,11 @@ export default function HomeScreen({ navigation }: any) {
           <TouchableOpacity style={styles.secondaryButton} onPress={handleViewRanking}>
             <Text style={styles.secondaryButtonText}>Ranking</Text>
           </TouchableOpacity>
+          
         </View>
       </View>
+      </ImageBackground>
+      
     </SafeAreaView>
   )
 }
@@ -86,6 +93,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  background: {
+  flex: 1,
+  width: "100%",
+  height: "100%",
+  },
   profileInitial: {
     color: "#FFFFFF",
     fontSize: 18,
@@ -111,28 +123,25 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 18,
-    color: "#7f8c8d",
+    color: "#fff",
     marginBottom: 40,
     textAlign: "center",
   },
   buttonContainer: {
     width: "100%",
     maxWidth: 300,
+    marginTop: 400,
   },
   primaryButton: {
-    backgroundColor: "#3498db",
-    borderRadius: 12,
+    backgroundColor: "#e67e22",
+    borderRadius: 16,
     padding: 16,
     alignItems: "center",
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    elevation: 5,
   },
   primaryButtonText: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
   },

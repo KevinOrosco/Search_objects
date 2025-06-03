@@ -62,8 +62,11 @@ export default function GameScreen({ navigation }: any) {
       )
       if (matched) {
         markObjectAsFound(matched.id)
+        navigation.navigate("Juego", { feedback: "+100 puntos" });
       }
-      navigation.navigate("Juego")
+      else {
+      navigation.navigate("Juego", { feedback: "No está en la lista" });
+    }
     })
 
     if (allObjectsFound()) {

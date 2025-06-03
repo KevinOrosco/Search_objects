@@ -20,7 +20,7 @@ export default function SummaryScreen({ navigation }: any) {
 
   const handlePlayAgain = () => {
     resetGame()
-    navigation.replace("Game")
+    navigation.replace("Juego")
   }
 
   const handleGoHome = () => {
