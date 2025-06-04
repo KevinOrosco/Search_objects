@@ -25,7 +25,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "package": "com.koroscocespedes.objectfindergame"
     },
     "web": {
       "favicon": "./assets/icon-pingu.png"

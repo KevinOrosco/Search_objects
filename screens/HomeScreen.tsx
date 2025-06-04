@@ -28,7 +28,7 @@ export default function HomeScreen({ navigation }: any) {
       <StatusBar style="dark" />
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Buscador de Objetos</Text>
+        <Text style={styles.headerTitle}>Buscando Objetos</Text>
         <TouchableOpacity onPress={handleViewProfile} style={styles.profileButton}>
           <View style={styles.profileIcon}>
             <Text style={styles.profileInitial}>{username.charAt(0) || "U"}</Text>

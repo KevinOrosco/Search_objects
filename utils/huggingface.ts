@@ -33,6 +33,8 @@ export async function detectObjects(base64Image: string): Promise<string[]> {
 
     const result = await response.json();
 
+    console.log(result)
+
     if (Array.isArray(result) && result.length > 0) {
       const detectedLabels = result.map((item: any) =>
         item.label.toLowerCase()
@@ -84,16 +86,5 @@ export const SYNONYMS_MAP: Record<string, string[]> = {
   "teclado": ["keyboard", "computer", "typing", "teclado"],
   "juguete": ["toy", "play", "juguete"],
   "lámpara": ["lamp", "light", "bulb", "lámpara"],
-  "cable": [
-  "cable",
-  "wire",
-  "cord",
-  "power",
-  "charging",
-  "charger",
-  "electric",
-  "usb cable",
-  "plug",
-  "line"
-],
+  "cable": ["cable","wire","cord","power","charging","charger","electric","usb cable","plug","line"],
 };
