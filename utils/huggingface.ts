@@ -33,8 +33,6 @@ export async function detectObjects(base64Image: string): Promise<string[]> {
 
     const result = await response.json();
 
-    console.log(result)
-
     if (Array.isArray(result) && result.length > 0) {
       const detectedLabels = result.map((item: any) =>
         item.label.toLowerCase()

@@ -1,28 +1,34 @@
 {
   "expo": {
-    "name": "Buscador de Objetos",
+    "name": "Busquemos objetos",
     "slug": "object-finder-game",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-pingu.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/pinguino.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon-pingu.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon-pingu.png"
     },
     "plugins": [
       [
@@ -31,6 +37,11 @@
           "cameraPermission": "La aplicación necesita acceso a tu cámara para buscar objetos."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6f427b0d-fc69-4825-bc98-514a3e2e29ae"
+      }
+    }
   }
 }

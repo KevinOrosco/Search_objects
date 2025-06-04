@@ -25,6 +25,8 @@ export default function GameScreen({ navigation }: any) {
   const cameraRef = useRef<CameraView | null>(null)
   const { objectsToFind, markObjectAsFound, allObjectsFound } = useGame()
 
+  const foundCount = objectsToFind.filter((obj) => obj.found).length
+
   useEffect(() => {
     if (!permission?.granted) {
       requestPermission()
@@ -52,26 +54,41 @@ export default function GameScreen({ navigation }: any) {
     const base64 = await FileSystem.readAsStringAsync(uri, {
       encoding: FileSystem.EncodingType.Base64,
     })
-    
+
     const detectedLabels = await detectObjects(base64)
 
-    // Marcar los objetos detectados
+    let foundSomething = false
+
     detectedLabels.forEach((label: string) => {
       const matched = objectsToFind.find(
         (obj) => obj.name.toLowerCase() === label.toLowerCase() && !obj.found
       )
       if (matched) {
         markObjectAsFound(matched.id)
-        navigation.navigate("Juego", { feedback: "+100 puntos" });
+        foundSomething = true
       }
-      else {
-      navigation.navigate("Juego", { feedback: "No está en la lista" });
-    }
     })
+
+    if (foundSomething) {
+      const FoundCount = objectsToFind.filter((obj) => obj.found).length
+
+      if(FoundCount === 0){
+      navigation.navigate("Juego", { feedback: "¡Muy Bien! +100 puntos" })
+      }
+      else if(FoundCount === 1){
+      navigation.navigate("Juego", { feedback: "¡Casi lo tienes! +100 puntos" })
+      }
+      else if(FoundCount === 2){
+      navigation.navigate("Juego", { feedback: "¡Lo lograste! +300 puntos" })
+      }
+    } else {
+      navigation.navigate("Juego", { feedback: "Ohh... no estaba en la lista" })
+    }
 
     if (allObjectsFound()) {
       navigation.replace("Summary")
     }
+
   } catch (error) {
     console.error("Error processing image:", error)
     Alert.alert("Error", "No se pudo procesar la imagen. Inténtalo de nuevo.")
@@ -79,6 +96,7 @@ export default function GameScreen({ navigation }: any) {
     setIsProcessing(false)
   }
 }
+
 
 
   if (!permission) {

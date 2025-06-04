@@ -46,14 +46,27 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const markObjectAsFound = (objectId: string) => {
-  setObjectsToFind((prevObjects) =>
-    prevObjects.map((obj) =>
+  setObjectsToFind((prevObjects) => {
+    const updatedObjects = prevObjects.map((obj) =>
       obj.id === objectId ? { ...obj, found: true } : obj
     )
-  )
-  setScore((prevScore) => prevScore + 100)
-  setTotalScore((prevTotal) => prevTotal + 100)
+
+    const isLastObject = updatedObjects.every((obj) =>
+      obj.id === objectId ? true : obj.found
+    )
+
+    if (isLastObject) {
+      setScore((prevScore) => prevScore + 300)
+      setTotalScore((prevTotal) => prevTotal + 300)
+    } else {
+      setScore((prevScore) => prevScore + 100)
+      setTotalScore((prevTotal) => prevTotal + 100)
+    }
+
+    return updatedObjects
+  })
 }
+
 
 
   const calculateScore = () => {
